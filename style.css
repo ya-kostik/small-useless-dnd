@@ -1,0 +1,50 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.Buckets {
+  display: flex;
+  position: relative;
+}
+
+.Bucket {
+  background: skyblue;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  width: 300px;
+  height: 300px;
+
+  transition: ease-out 0.3s;
+}
+
+.Bucket_dropzone {}
+
+.Trash {
+  background: purple;
+  width: 80px;
+  height: 80px;
+  margin: 4px;
+}
+
+.Item {
+  background: pink;
+  width: 50px;
+  height: 50px;
+  margin: 8px;
+  color: purple;
+  font-size: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Box {
+  margin: 8px;
+  border: 2px solid darkblue;
+  display: flex;
+  justify-content: flex-start;
+}
