@@ -15,7 +15,10 @@ function hook(name, fn) {
   this.__hooks[name].push(fn);
 }
 
-
+/**
+ * Add group of hooks to Class
+ * @param  {Object} hooks key of object is the hook's name, value is the hook's callback or array of callbacks
+ */
 function hooks(hooks) {
   for (const [name, fn] of Object.entries(hooks)) {
     if (Array.isArray(fn)) {
@@ -52,6 +55,9 @@ function removeHook(name, fn) {
   return fn;
 }
 
+/**
+ * Remove all hooks of Class
+ */
 function removeHooks() {
   this.__hooks = null;
 }

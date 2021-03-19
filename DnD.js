@@ -2,10 +2,73 @@ import { on, off, stop, prevent } from '/dom-kit/event.js';
 import { search } from '/dom-kit/query.js';
 import { HooksMixin } from '/HooksMixin.js';
 
+/**
+ * Функция возвращающая bool
+ * @typedef {Function} BoolFunction
+ * @return {Boolean}
+ */
+
+/**
+ * Бессобытийный хук
+ * Т. е. хук без объекта события и элемента-контейнера,
+ * например start и end
+ *
+ * @typedef {Function} EvtlessHook
+ * @param {Object} context — привязанный к перетаскиванию контекст
+ * @param {DnD} dnd — экземпляр контроллера, на котором запустился хук
+ */
+
+/**
+ * Событийный хук
+ * Т. е. хук из событий dragover, dragenter, drop
+ *
+ * @typedef {Function} EvtHook
+ * @param {Event} evt — событие в DOM
+ * @param {Element} element — элемент, готовый принять объект для сброса
+ * @param {Object} context — привязанный к перетаскиванию контекст
+ * @param {DnD} dnd — экземпляр контроллера, на котором запустился хук
+ */
+
+/**
+ * Хуки для DnD
+ *
+ * @typedef {Object} Hooks
+ * @prop {(EvtlessHook|[EvtlessHook])} start — хук начала перетаскивания в контроллере
+ * @prop {(EvtHook|[EvtHook])} enter — хук входа в подходящий элемент-контейнер
+ * @prop {(EvtHook|[EvtHook])} over — хук движения над подходящим элементом-контейнером
+ * @prop {(EvtHook|[EvtHook])} drop — хук сброса объекта в элемент-контейнер
+ * @prop {(EvtHook|[EvtHook])} leave — хук выхода из подходящего элемента-контейнера
+ * @prop {(EvtlessHook|[EvtlessHook])} stop — хук завершения перетаскивания в контроллере
+ */
+
+/**
+ * Опции для DnD контроллера
+ *
+ * @typedef {Object} Options
+ * @memberof DnD
+ * @prop {BoolFunction} isDropTarget — функция-определитель подходящего контейнера сброса
+ * @prop {Boolean} [stop=true] — флаг, если true всплытие событий будет остановлено
+ * @prop {Boolean} [prevent=true] — флаг, если true, поведение по умолчанию у событий будет отменено
+ * @prop {Hooks} hooks — словарь хуков контроллера DnD
+ */
+
+
 const DND = Symbol('DnD container symbol');
 
+/**
+ * Стандартный «проверяльщик» подходящего элемента-контейнера
+ * Всегда возвращает false, так что по его мнению ни один элемент не достоин
+ * @type {BoolFunction}
+ */
 const alwaysFalsy = () => false;
 
+/**
+ * Начать отслеживание DnD
+ *
+ * @param  {Object} context — контекст для DnD, может быть любым объектом, в который можно писать новые поля, например DOMElement
+ * @param  {Options} options — опции контроллера DnD
+ * @return {DnD}
+ */
 export function dragStart(context, options) {
   const dnd = new DnD(context, options);
   context[DND] = dnd;
@@ -13,6 +76,12 @@ export function dragStart(context, options) {
   return dnd;
 }
 
+/**
+ * Завершить отслеживание DnD
+ *
+ * @param  {Object} context — контекст для DnD, может быть любым объектом, в который можно писать новые поля, например DOMElement
+ * @return {(null|DnD)} — вернет ранее привязанный объект dnd, или null, если для контекста не вызывали функцию dragStart
+ */
 export function dragEnd(context) {
   if (!Object.prototype.hasOwnProperty.call(context, DND)) {
     return null;
@@ -26,6 +95,12 @@ export function dragEnd(context) {
   return dnd;
 }
 
+/**
+ * Контроллер перетаскивания для DnD
+ *
+ * @param {Object} context — любой контекстный объект, для которого реализуем перетаскивание
+ * @param {Options} options — опции контроллера
+ */
 export class DnD {
   constructor(context, options) {
     this.context = context;
@@ -107,11 +182,17 @@ export class DnD {
       : this._track(element, evt);
   }
 
+  /**
+   * Начать ослеживание перетаскивания
+   */
   start() {
     on(window, 'dragenter', this.onWindowDragEnter);
     this.processHooks('start', this.context);
   }
 
+  /**
+   * Завершить ослеживание перетаскивания
+   */
   end() {
     if (this._target) this._unTrack();
     off(window, 'dragenter', this.onWindowDragEnter)
